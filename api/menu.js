@@ -1,28 +1,28 @@
-import mysql from "mysql2/promise";
+const express = require('express');
+const router = express.Router();
+const mysql = require('mysql2/promise');
 
+// إعدادات قاعدة البيانات (تأكد إنها متطابقة مع إعدادات مشروعك)
 const dbConfig = {
-  host: process.env.DB_HOST, // e.g. srv840.hstgr.io
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  charset: "utf8mb4",
+  host: 'localhost',
+  user: 'u532642612_abu_haitham',
+  password: 'Numo@up11111',
+  database: 'u532642612_abu_haitham',
 };
 
-export default async function handler(req, res) {
+// الـ API الأصلي (مثلاً لعرض الأصناف)
+// router.get('/menu', async (req, res) => { ... });
+
+// أضف هذا الـ endpoint لاختبار الاتصال
+router.get('/test-db', async (req, res) => {
   try {
-    const connection = await mysql.createConnection(dbConfig);
-
-    const [rows] = await connection.execute(`
-      SELECT id, name, name_en, description, description_en, price, image, category_id, rating, reviews_count,
-             is_spicy, is_vegetarian, is_popular, is_new, ingredients, allergens, calories, preparation_time,
-             serving_size, is_available, sort_order, created_at, updated_at
-      FROM menu_items
-    `);
-
-    await connection.end();
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ error: 'Database connection error' });
+    const conn = await mysql.createConnection(dbConfig);
+    await conn.execute('SELECT 1');
+    await conn.end();
+    res.json({ success: true, message: '✅ تم الاتصال بقاعدة البيانات بنجاح.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
-}
+});
+
+module.exports = router;
