@@ -1,26 +1,15 @@
-import mysql from 'mysql2/promise';
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      charset: 'utf8mb4',
-    });
-
-    const [rows] = await connection.execute('SELECT * FROM menu_items');
-    await connection.end();
-
-    return res.status(200).json({ success: true, data: rows });
-
+    const response = await fetch('https://your-shared-hosting.com/api/menu.php'); // رابط ملف PHP
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'خطأ في استرجاع البيانات من السيرفر' });
+    }
+    const data = await response.json();
+    res.status(200).json(data);
   } catch (error) {
-    console.error('Database error:', error); // راح يظهر في سجلات Vercel
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    console.error('خطأ في fetch API:', error);
+    res.status(500).json({ error: 'حدث خطأ في السيرفر' });
   }
 }
