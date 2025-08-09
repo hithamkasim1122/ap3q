@@ -1,51 +1,62 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🍽 قائمة مطعم أبو هيثم</title>
-<style>
-  body { font-family: Arial, sans-serif; direction: rtl; }
-  .menu-item { border-bottom: 1px solid #ccc; padding: 10px; }
-  .menu-item img { max-width: 150px; }
-</style>
+  <meta charset="UTF-8" />
+  <title>🍽 قائمة مطعم أبو </title>
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
+    h1 { color: #333; }
+    .error { color: red; }
+    .menu-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+    .menu-item img { max-width: 150px; border-radius: 8px; }
+    .menu-item h2 { margin: 0; }
+    .price { font-weight: bold; color: green; }
+  </style>
 </head>
 <body>
-<h1>🍽 قائمة  أبو هيثم</h1>
-<div id="menu"></div>
+  <h1>🍽 قائمة مطعم أبو هيثم</h1>
+  <div id="error" class="error"></div>
+  <div id="menu"></div>
 
-<script>
-async function fetchMenu() {
-  try {
-    const res = await fetch('/api/menu');
-    if (!res.ok) throw new Error('خطأ في تحميل البيانات: ' + res.status);
-    const menu = await res.json();
-    const menuDiv = document.getElementById('menu');
+  <script>
+    async function fetchMenu() {
+      const errorDiv = document.getElementById('error');
+      const menuDiv = document.getElementById('menu');
+      errorDiv.textContent = '';
+      menuDiv.innerHTML = '';
 
-    if (menu.error) {
-      menuDiv.textContent = menu.error;
-      return;
+      try {
+        const response = await fetch('/api/menu');  // يستدعي API في Vercel
+        if (!response.ok) {
+          throw new Error(`خطأ في تحميل البيانات: ${response.status}`);
+        }
+        const data = await response.json();
+
+        if (data.length === 0) {
+          menuDiv.textContent = 'لا توجد أطباق حالياً.';
+          return;
+        }
+
+        data.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'menu-item';
+
+          itemDiv.innerHTML = `
+            <h2>${item.name}</h2>
+            <img src="${item.image}" alt="${item.name}" />
+            <p>${item.description}</p>
+            <p class="price">${item.price} ريال</p>
+          `;
+
+          menuDiv.appendChild(itemDiv);
+        });
+
+      } catch (error) {
+        errorDiv.textContent = error.message;
+      }
     }
 
-    if (menu.length === 0) {
-      menuDiv.textContent = 'لا توجد بيانات لعرضها.';
-      return;
-    }
-
-    menuDiv.innerHTML = menu.map(item => `
-      <div class="menu-item">
-        <h3>${item.name} - ${item.price} د.ك</h3>
-        <img src="${item.image}" alt="${item.name}" />
-        <p>${item.description}</p>
-      </div>
-    `).join('');
-  } catch (error) {
-    document.getElementById('menu').textContent = 'حدث خطأ عند تحميل البيانات.';
-    console.error(error);
-  }
-}
-
-fetchMenu();
-</script>
+    fetchMenu();
+  </script>
 </body>
 </html>
