@@ -1,32 +1,26 @@
 import mysql from 'mysql2/promise';
 
 export default async function handler(req, res) {
-  const dbConfig = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    charset: 'utf8mb4',
-  };
-
   if (req.method !== 'GET') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const conn = await mysql.createConnection(dbConfig);
-    const [rows] = await conn.execute(`
-      SELECT id, name, description, price, is_available, sort_order
-      FROM menu_items
-      WHERE is_available = 1
-      ORDER BY sort_order ASC
-    `);
-    await conn.end();
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      charset: 'utf8mb4',
+    });
 
-    res.status(200).json({ success: true, data: rows });
+    const [rows] = await connection.execute('SELECT * FROM menu_items');
+    await connection.end();
+
+    return res.status(200).json({ success: true, data: rows });
+
   } catch (error) {
-    console.error('Database error:', error); // سجل الخطأ في لوجات Vercel
-    res.status(500).json({ success: false, error: 'Internal Server Error: ' + error.message });
+    console.error('Database error:', error); // راح يظهر في سجلات Vercel
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 }
