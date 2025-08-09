@@ -3,37 +3,49 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🍽 قائمة م3طعم2 أبو هيثم</title>
+<title>🍽 قائمة مطعم أبو هيثم</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  h1 { color: #2c3e50; }
-  ul { list-style-type: none; padding: 0; }
-  li { background: #ecf0f1; margin: 10px 0; padding: 15px; border-radius: 5px; }
-  .price { color: green; font-weight: bold; }
+  body { font-family: Arial, sans-serif; direction: rtl; }
+  .menu-item { border-bottom: 1px solid #ccc; padding: 10px; }
+  .menu-item img { max-width: 150px; }
 </style>
 </head>
 <body>
-  <h1>🍽 قائمة مطعم 33أبو هيثم</h1>
-  <ul id="menu-list">جارٍ تحميل القائمة...</ul>
-  <script>
-    async function fetchMenu() {
-      try {
-        const res = await fetch('/api/menu');
-        if (!res.ok) throw new Error('خطأ في تحميل البيانات: ' + res.status);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'خطأ غير معروف');
-        const menuList = document.getElementById('menu-list');
-        menuList.innerHTML = '';
-        data.data.forEach(item => {
-          const li = document.createElement('li');
-          li.innerHTML = `<strong>${item.name}</strong><br />${item.description}<br /><span class="price">${item.price} د.ك</span>`;
-          menuList.appendChild(li);
-        });
-      } catch (err) {
-        document.getElementById('menu-list').textContent = err.message;
-      }
+<h1>🍽 قائمة مطعم أبو هيثم</h1>
+<div id="menu"></div>
+
+<script>
+async function fetchMenu() {
+  try {
+    const res = await fetch('/api/menu');
+    if (!res.ok) throw new Error('خطأ في تحميل البيانات: ' + res.status);
+    const menu = await res.json();
+    const menuDiv = document.getElementById('menu');
+
+    if (menu.error) {
+      menuDiv.textContent = menu.error;
+      return;
     }
-    fetchMenu();
-  </script>
+
+    if (menu.length === 0) {
+      menuDiv.textContent = 'لا توجد بيانات لعرضها.';
+      return;
+    }
+
+    menuDiv.innerHTML = menu.map(item => `
+      <div class="menu-item">
+        <h3>${item.name} - ${item.price} د.ك</h3>
+        <img src="${item.image}" alt="${item.name}" />
+        <p>${item.description}</p>
+      </div>
+    `).join('');
+  } catch (error) {
+    document.getElementById('menu').textContent = 'حدث خطأ عند تحميل البيانات.';
+    console.error(error);
+  }
+}
+
+fetchMenu();
+</script>
 </body>
 </html>
