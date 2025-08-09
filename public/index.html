@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>قائمة المطعم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        img { width: 80px; height: auto; }
+        .center { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1 class="center">🍽 قائمة مطعم أبو هيثم</h1>
+    <div id="msg" class="center">تحميل...</div>
+    <table id="menuTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>الصورة</th>
+                <th>الاسم</th>
+                <th>الوصف</th>
+                <th>السعر</th>
+                <th>التقييم</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        async function loadMenu() {
+            try {
+                const res = await fetch('/api/menu');
+                if (!res.ok) throw new Error('Server error');
+                const data = await res.json();
+                const tableBody = document.querySelector('#menuTable tbody');
+                if (!data || data.length === 0) {
+                    document.getElementById('msg').textContent = 'لا توجد أصناف لعرضها.';
+                    return;
+                }
+                document.getElementById('msg').style.display = 'none';
+                document.getElementById('menuTable').style.display = 'table';
+                data.forEach(item => {
+                    const img = item.image ? `<img src="${item.image}" alt="${(item.name||'')}" onerror="this.style.display='none'">` : 'لا توجد صورة';
+                    const row = `
+                        <tr>
+                            <td>${img}</td>
+                            <td>${escapeHtml(item.name)}</td>
+                            <td>${escapeHtml(item.description)}</td>
+                            <td>${item.price ? Number(item.price).toFixed(2) : '-'}</td>
+                            <td>${item.rating ?? '-'}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error(err);
+                document.getElementById('msg').textContent = 'حدث خطأ عند تحميل البيانات.';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>"']/g, function(m) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+            });
+        }
+
+        loadMenu();
+    </script>
+</body>
+</html>
