@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ success: false, error: 'خطأ في تحميل البيانات: ' + error.message });
+    console.error('Database error:', error); // سجل الخطأ في لوجات Vercel
+    res.status(500).json({ success: false, error: 'Internal Server Error: ' + error.message });
   }
 }
