@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
   try {
     const response = await fetch('https://pt.hqasite.com/abu_haitham/wep/api/menu.php');
